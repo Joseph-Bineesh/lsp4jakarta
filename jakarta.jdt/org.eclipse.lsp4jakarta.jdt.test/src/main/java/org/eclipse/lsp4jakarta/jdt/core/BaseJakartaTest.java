@@ -15,6 +15,9 @@ package org.eclipse.lsp4jakarta.jdt.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
@@ -26,8 +29,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 
 /**
@@ -64,8 +69,75 @@ public class BaseJakartaTest {
             waitForBackgroundJobs(monitor);
         }
 
+        //IJavaProject javaProject = JavaCore.create(project);
         IJavaProject javaProject = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProject(description.getName());
+        addJar(javaProject);
         return javaProject;
+    }
+
+    public static void addJar(IJavaProject javaProject) {
+        try {
+            IClasspathEntry[] classpathEntries = javaProject.getResolvedClasspath(true);
+            IClasspathEntry jrtEntry = JavaCore.newLibraryEntry(
+                                                                new Path(System.getProperty("java.home") + "/lib/jrt-fs.jar"),
+                                                                null,
+                                                                null);
+            IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
+
+            boolean isPresent = false;
+            for (IClasspathEntry entry : classpathEntries) {
+
+                if (entry.getPath().equals(jrtEntry.getPath())) {
+                    isPresent = true;
+                }
+            }
+
+            if (!isPresent) {
+                IClasspathEntry[] newClasspath = new IClasspathEntry[rawClasspath.length + 1];
+                System.arraycopy(rawClasspath, 0, newClasspath, 0, rawClasspath.length);
+                newClasspath[rawClasspath.length] = jrtEntry;
+
+                javaProject.setRawClasspath(newClasspath, null);
+
+                System.out.println("Added jrt-fs.jar to classpath");
+            }
+
+        } catch (JavaModelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void addJRE(IJavaProject javaProject) {
+
+        try {
+
+            // Your JDK modules path
+            IPath modulesPath = new Path("/Library/Java/JavaVirtualMachines/ibm-semeru-open-17.jre/Contents/Home/lib/modules");
+
+            // Create a new library entry
+            IClasspathEntry jdkEntry = JavaCore.newLibraryEntry(modulesPath, null, null);
+
+            // Get the current classpath
+            IClasspathEntry[] existingEntries = javaProject.getRawClasspath();
+            List<IClasspathEntry> newEntries = new ArrayList<>(Arrays.asList(existingEntries));
+
+            // Check if it's already added
+            boolean alreadyExists = newEntries.stream().anyMatch(entry -> entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY &&
+                                                                          entry.getPath().equals(modulesPath));
+
+            if (!alreadyExists) {
+                newEntries.add(jdkEntry);
+                javaProject.setRawClasspath(newEntries.toArray(new IClasspathEntry[0]), null);
+                System.out.println("Added lib/modules to classpath.");
+            } else {
+                System.out.println("lib/modules is already in classpath.");
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private static File copyProjectToWorkingDirectory(String projectName, String parentDirName) throws IOException {
