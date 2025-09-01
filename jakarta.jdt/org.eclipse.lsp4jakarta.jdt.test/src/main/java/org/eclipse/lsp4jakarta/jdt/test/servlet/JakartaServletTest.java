@@ -194,7 +194,7 @@ public class JakartaServletTest extends BaseJakartaTest {
     }
 
     @Test
-    @Ignore
+    //@Ignore
     public void CompleteWebFilterAnnotation() throws Exception {
 
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
@@ -206,29 +206,23 @@ public class JakartaServletTest extends BaseJakartaTest {
 
         Diagnostic d = d(5, 0, 12,
                          "The annotation @WebFilter must define the attribute 'urlPatterns', 'servletNames' or 'value'.",
-                         DiagnosticSeverity.Error, "jakarta-servlet", "CompleteWebFilterAttributes");
+                         DiagnosticSeverity.Error, "jakarta-servlet", "WebFilterAnnotationMissingAttributes");
 
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, d);
 
-        String newText = "package io.openliberty.sample.jakarta.servlet;\n\nimport jakarta.servlet.*;\n" +
-                         "import jakarta.servlet.annotation.WebFilter;\n\n@WebFilter(servletNames=\"\")\npublic abstract class InvalidWebFilter " +
-                         "implements Filter {\n\n}\n\n\n";
-        String newText1 = "package io.openliberty.sample.jakarta.servlet;\n\nimport jakarta.servlet.*;\n" +
-                          "import jakarta.servlet.annotation.WebFilter;\n\n@WebFilter(urlPatterns=\"\")\npublic abstract class InvalidWebFilter " +
-                          "implements Filter {\n\n}\n\n\n";
-        String newText2 = "package io.openliberty.sample.jakarta.servlet;\n\nimport jakarta.servlet.*;\n" +
-                          "import jakarta.servlet.annotation.WebFilter;\n\n@WebFilter(\"\")\npublic abstract class InvalidWebFilter " +
-                          "implements Filter {\n\n}\n\n\n";
+        String newText = "@WebFilter(servletNames = \"\")\n";
+        String newText1 = "@WebFilter(urlPatterns = \"\")\n";
+        String newText2 = "@WebFilter(value = \"\")\n";
 
         JakartaJavaCodeActionParams codeActionParams = createCodeActionParams(uri, d);
 
-        TextEdit te1 = te(0, 0, 11, 0, newText);
+        TextEdit te1 = te(5, 0, 6, 0, newText);
         CodeAction ca1 = ca(uri, "Add the `servletNames` attribute to @WebFilter", d, te1);
 
-        TextEdit te2 = te(0, 0, 11, 0, newText1);
+        TextEdit te2 = te(5, 0, 6, 0, newText1);
         CodeAction ca2 = ca(uri, "Add the `urlPatterns` attribute to @WebFilter", d, te2);
 
-        TextEdit te3 = te(0, 0, 11, 0, newText2);
+        TextEdit te3 = te(5, 0, 6, 0, newText2);
         CodeAction ca3 = ca(uri, "Add the `value` attribute to @WebFilter", d, te3);
 
         assertJavaCodeAction(codeActionParams, IJDT_UTILS, ca1, ca2, ca3);
@@ -236,7 +230,7 @@ public class JakartaServletTest extends BaseJakartaTest {
     }
 
     @Test
-    @Ignore
+    //@Ignore
     public void RemoveDuplicateWebFilterAttributes() throws Exception {
 
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
