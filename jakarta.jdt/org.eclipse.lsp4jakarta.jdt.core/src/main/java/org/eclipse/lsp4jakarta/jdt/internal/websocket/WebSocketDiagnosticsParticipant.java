@@ -23,9 +23,12 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IAnnotation;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
@@ -60,6 +63,14 @@ public class WebSocketDiagnosticsParticipant implements IJavaDiagnosticsParticip
         
     	//logic to find version
     	String version = "J11";
+    	
+    	IJavaProject javaProject = context.getJavaProject();
+    	IClasspathEntry[] entries = javaProject.getResolvedClasspath(true);
+
+    	for (IClasspathEntry entry : entries) {
+    	    IPath path = entry.getPath();
+    	    System.out.println("Classpath entry: " + path.toOSString());
+    	}
     	
         List<Diagnostic> diagnostics = new ArrayList<>();
 
