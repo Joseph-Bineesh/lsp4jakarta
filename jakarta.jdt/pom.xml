@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.eclipse.lsp4jakarta</groupId>
     <artifactId>jdt-parent</artifactId>
-    <version>0.2.5-SNAPSHOT</version>
+    <version>0.2.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Eclipse LSP4Jakarta JDT Plugin Parent</name>
     <description>Eclipse LSP4Jakarta JDT Plugin Parent</description>
@@ -18,7 +18,7 @@
         <connection>scm:git:git@github.com:eclipse/lsp4jakarta.git</connection>
         <developerConnection>scm:git:git@github.com:eclipse/lsp4jakarta.git</developerConnection>
         <url>git@github.com:eclipse/lsp4jakarta.git</url>
-        <tag>0.2.5-SNAPSHOT</tag>
+        <tag>0.2.6-SNAPSHOT</tag>
     </scm>
     <licenses>
         <license>
@@ -138,9 +138,9 @@
                     <configuration>
                         <useUIHarness>false</useUIHarness>
                         <argLine>-Xmx512m</argLine>
-                        <!-- kill test JVM if tests take more than 1 minute (60 seconds) to
-                            finish -->
-                        <forkedProcessTimeoutInSeconds>60</forkedProcessTimeoutInSeconds>
+                        <!-- kill test JVM if tests take more than 10 minutes (600 seconds) to
+                            finish. This depends on speed of VM but current runs are 180s. -->
+                        <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
                     </configuration>
                 </plugin>
             </plugins>
@@ -163,9 +163,9 @@
                         <configuration>
                             <useUIHarness>false</useUIHarness>
                             <argLine>-Xmx512m -XstartOnFirstThread</argLine>
-                            <!-- kill test JVM if tests take more than 1 minute (60 seconds) to
-                                finish -->
-                            <forkedProcessTimeoutInSeconds>60</forkedProcessTimeoutInSeconds>
+                            <!-- kill test JVM if tests take more than 10 minutes (600 seconds) to
+                                finish. This depends on speed of VM but current runs are 180s. -->
+                            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
                         </configuration>
                     </plugin>
                 </plugins>

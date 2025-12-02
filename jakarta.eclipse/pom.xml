@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.eclipse.lsp4jakarta</groupId>
     <artifactId>org.eclipse.lsp4jakarta.lsp4e</artifactId>
-    <version>0.2.5-SNAPSHOT</version>
+    <version>0.2.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Eclipse LSP4Jakarta LSP4E Parent</name>
     <description>Eclipse LSP4Jakarta LSP4E Parent</description>
@@ -108,9 +108,9 @@
                     <configuration>
                         <useUIHarness>true</useUIHarness>
                         <argLine>${tycho.test.jvmArgs}</argLine>
-                        <!-- kill test JVM if tests take more than 1 minute (60 seconds) to
-                            finish -->
-                        <forkedProcessTimeoutInSeconds>60</forkedProcessTimeoutInSeconds>
+                        <!-- kill test JVM if tests take more than 10 minutes (600 seconds) to
+                            finish. This depends on speed of VM but current runs are 180s. -->
+                        <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
                     </configuration>
                 </plugin>
             </plugins>
