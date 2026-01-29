@@ -36,7 +36,7 @@ public class ASTUtils {
         ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         parser.setSource(unit);
-        parser.setResolveBindings(true);
+        parser.setResolveBindings(false);
         return parser.createAST(null);
     }
 

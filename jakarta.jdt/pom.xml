@@ -30,12 +30,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <tycho.version>3.0.3</tycho.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <tycho.version>5.0.1</tycho.version>
         <tycho.scmUrl>scm:git:https://github.com/eclipse/lsp4jakarta</tycho.scmUrl>
         <tycho.generateSourceReferences>true</tycho.generateSourceReferences>
-        <jdt.ls.version>1.21.0.20230316144047</jdt.ls.version>
+        <jdt.ls.version>1.55.0.20260113151420</jdt.ls.version>
         <releases.repo.id>repo.eclipse.org</releases.repo.id>
         <releases.repo.url>https://repo.eclipse.org/content/repositories/lsp4jakarta-releases/</releases.repo.url>
         <snapshots.repo.id>repo.eclipse.org</snapshots.repo.id>
@@ -43,14 +43,14 @@
     </properties>
     <repositories>
         <repository>
-            <id>2023-06</id>
+            <id>2025-12</id>
             <layout>p2</layout>
-            <url>http://download.eclipse.org/releases/2023-06</url>
+            <url>http://download.eclipse.org/releases/2025-12</url>
         </repository>
         <repository>
             <id>jdt.ls.p2</id>
             <layout>p2</layout>
-            <url>https://download.eclipse.org/jdtls/milestones/1.21.0/repository/</url>
+            <url>https://download.eclipse.org/jdtls/milestones/1.55.0/repository/</url>
         </repository>
         <repository>
             <id>jdt.ls.maven.snapshots</id>
@@ -87,6 +87,15 @@
                 <version>${tycho.version}</version>
                 <extensions>true</extensions>
             </plugin>
+            <plugin>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-compiler-plugin</artifactId>
+      <version>${tycho.version}</version>
+      <configuration>
+        <useJDK>BREE</useJDK>
+        <release>21</release>
+      </configuration>
+    </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
