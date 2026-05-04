@@ -15,11 +15,13 @@ package org.eclipse.lsp4jakarta.jdt.core.utils;
 
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.ISourceRange;
+import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.lsp4j.Range;
@@ -103,24 +105,33 @@ public class PositionUtils {
     }
 
     /**
-     * Returns the LSP range for the given member (field or method).
+     * toNameRange
+     * Returns the LSP range for the given Java element name.
      *
-     * @param member the java member (IField or IMethod).
-     * @param utils the JDT utilities.
-     * @return the LSP range for the given member name.
-     * @throws JavaModelException
+     * @param element the Java element (IField, IMethod, ILocalVariable, IType, or IAnnotation)
+     * @param utils the JDT utilities
+     * @return the LSP range for the given element name
+     * @throws JavaModelException if there's an error accessing the element
      */
-    public static Range toNameRange(IMember member, IJDTUtils utils) throws JavaModelException {
-        if (member instanceof IField) {
-            return toNameRange((IField) member, utils);
-        } else if (member instanceof IMethod) {
-            return toNameRange((IMethod) member, utils);
-        } else if (member instanceof IType) {
-            return toNameRange((IType) member, utils);
+    public static Range toNameRange(IJavaElement element, IJDTUtils utils) throws JavaModelException {
+        if (!(element instanceof ISourceReference)) {
+            throw new IllegalArgumentException("Element must implement ISourceReference: " + element.getClass().getName());
         }
-        // Fallback for other IMember types
-        IOpenable openable = member.getCompilationUnit();
-        ISourceRange sourceRange = member.getNameRange();
+
+        ISourceReference sourceRef = (ISourceReference) element;
+        ISourceRange sourceRange;
+        IOpenable openable;
+
+        // IAnnotation uses getSourceRange(), others use getNameRange()
+        if (element instanceof IAnnotation) {
+            IAnnotation annotation = (IAnnotation) element;
+            sourceRange = annotation.getSourceRange();
+            openable = annotation.getOpenable();
+        } else {
+            sourceRange = sourceRef.getNameRange();
+            openable = element.getOpenable();
+        }
+
         return utils.toRange(openable, sourceRange.getOffset(), sourceRange.getLength());
     }
 }
