@@ -46,9 +46,9 @@ import org.eclipse.jdt.core.dom.rewrite.ImportRewrite.ImportRewriteContext;
  */
 public class AnnotationValueExpressionUtil {
 
-	/** Logger object to record events for this class. */
+    /** Logger object to record events for this class. */
     private static final Logger LOGGER = Logger.getLogger(AnnotationValueExpressionUtil.class.getName());
-    
+
     /**
      * Creates an expression for the annotation attribute value.
      * Accepts any of the following types:
@@ -69,26 +69,10 @@ public class AnnotationValueExpressionUtil {
      */
     public static Expression createValueExpression(AST ast, Object value, String annotation,
                                                    ImportRewrite imports, ImportRewriteContext importRewriteContext) {
-        // Handle Number types directly
-        if (value instanceof Number) {
-            return ast.newNumberLiteral(value.toString());
-        }
-
-        // Handle Boolean types directly
-        if (value instanceof Boolean) {
-            return ast.newBooleanLiteral((Boolean) value);
-        }
-        
-        //Handle Character
-        if(value instanceof Character) {
-        	CharacterLiteral ch = ast.newCharacterLiteral();
-            ch.setCharValue((Character) value);
-            return ch;
-        }
 
         if (value instanceof String) {
-        	String strValue = value.toString();
-        	// Check if it's a string literal (wrapped in quotes)
+            String strValue = value.toString();
+            // Check if it's a string literal (wrapped in quotes)
             if (strValue.startsWith("\"") && strValue.endsWith("\"")) {
                 // Remove the quotes and create a string literal
                 String literalValue = strValue.substring(1, strValue.length() - 1);
@@ -96,7 +80,7 @@ public class AnnotationValueExpressionUtil {
                 stringLiteral.setLiteralValue(literalValue);
                 return stringLiteral;
             }
-            
+
             // Check if it's a qualified enum name (e.g., enum constant like TemporalType.DATE)
             if (strValue.contains(".")) {
                 String[] parts = strValue.split("\\.");
@@ -115,36 +99,14 @@ public class AnnotationValueExpressionUtil {
                                             ast.newSimpleName(importedTypeName),
                                             ast.newSimpleName(fieldName));
             }
+        } else {
+            return convertObjectToExpression(ast, value);
         }
 
-        // Handle Object Array
-        if (value instanceof Object[]) {
-            ArrayInitializer arr = ast.newArrayInitializer();
-            for (Object element : (Object[]) value) {
-                arr.expressions().add(createValueExpression(ast, element, annotation, imports, importRewriteContext));
-            }
-            return arr;
-        }
-        
-        if (value instanceof IVariableBinding) {
-            IVariableBinding var = (IVariableBinding) value;
-            if (var.isEnumConstant()) {
-                Name enumTypeName = ast.newName(var.getDeclaringClass().getName());
-                return ast.newQualifiedName(enumTypeName, ast.newSimpleName(var.getName()));
-            }
-        }
-        
-        if (value instanceof ITypeBinding) {
-            TypeLiteral typeLiteral = ast.newTypeLiteral();
-            typeLiteral.setType(ast.newSimpleType(ast.newSimpleName(((ITypeBinding) value).getName())));
-            return typeLiteral;
-        }
-        
-        logUnableToCreateDefaultValue();
         return ast.newNullLiteral();
+
     }
-    
-    
+
     /**
      * findDefaultAttributeValue
      * Returns the default AST {@link Expression} for an annotation attribute.
