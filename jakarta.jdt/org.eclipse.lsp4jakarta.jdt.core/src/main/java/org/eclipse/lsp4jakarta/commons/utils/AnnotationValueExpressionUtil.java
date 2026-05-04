@@ -71,9 +71,11 @@ public class AnnotationValueExpressionUtil {
                                                    ImportRewrite imports, ImportRewriteContext importRewriteContext) {
 
         if (value instanceof String) {
+            String doubleQuote = "\"";
+            String dot = ".";
             String strValue = value.toString();
             // Check if it's a string literal (wrapped in quotes)
-            if (strValue.startsWith("\"") && strValue.endsWith("\"")) {
+            if (strValue.startsWith(doubleQuote) && strValue.endsWith(doubleQuote)) {
                 // Remove the quotes and create a string literal
                 String literalValue = strValue.substring(1, strValue.length() - 1);
                 StringLiteral stringLiteral = ast.newStringLiteral();
@@ -82,14 +84,14 @@ public class AnnotationValueExpressionUtil {
             }
 
             // Check if it's a qualified enum name (e.g., enum constant like TemporalType.DATE)
-            if (strValue.contains(".")) {
-                String[] parts = strValue.split("\\.");
+            if (strValue.contains(dot)) {
+                String[] parts = strValue.split("\\" + dot);
                 String typeName = parts[0]; // e.g., "TemporalType"
                 String fieldName = parts[1]; // e.g., "DATE"
 
                 // Infer the package from the annotation package
-                String annotationPackage = annotation.substring(0, annotation.lastIndexOf('.'));
-                String fullyQualifiedTypeName = annotationPackage + "." + typeName;
+                String annotationPackage = annotation.substring(0, annotation.lastIndexOf(dot));
+                String fullyQualifiedTypeName = annotationPackage + dot + typeName;
 
                 // Add import for the type
                 String importedTypeName = imports.addImport(fullyQualifiedTypeName, importRewriteContext);
