@@ -47,16 +47,6 @@ import org.eclipse.lsp4jakarta.commons.utils.AnnotationValueExpressionUtil;
  * <li>Qualified names (enum constants): e.g., {@code "TemporalType.DATE"}</li>
  * <li>Simple names: e.g., {@code "DATE"}</li>
  * </ul>
- * <p>
- * Example usage:
- *
- * <pre>
- * Map<String, Object> attrs = new LinkedHashMap<>();
- * attrs.put("name", "\"id\"");
- * attrs.put("nullable", "false");
- * new InsertAnnotationWithAttributesProposal(..., "jakarta.persistence.Column", attrs);
- * // Produces: @Column(name = "id", nullable = false)
- * </pre>
  */
 public class InsertAnnotationWithAttributesProposal extends ASTRewriteCorrectionProposal {
 

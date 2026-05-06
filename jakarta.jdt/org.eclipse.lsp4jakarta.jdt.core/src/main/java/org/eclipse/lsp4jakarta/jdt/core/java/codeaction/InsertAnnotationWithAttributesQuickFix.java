@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -140,19 +141,10 @@ public abstract class InsertAnnotationWithAttributesQuickFix implements IJavaCod
      */
     protected String getLabel() {
         String annotationName = annotation.substring(annotation.lastIndexOf('.') + 1);
-        StringBuilder label = new StringBuilder(Messages.getMessage("InsertAnnotation")).append(annotationName).append("(");
 
-        int i = 0;
-        for (Map.Entry<String, String> entry : attributes.entrySet()) {
-            if (i > 0) {
-                label.append(", ");
-            }
-            label.append(entry.getKey()).append(" = ").append(entry.getValue());
-            i++;
-        }
+        String attributesStr = attributes.entrySet().stream().map(entry -> entry.getKey() + " = " + entry.getValue()).collect(Collectors.joining(", "));
 
-        label.append(")");
-        return label.toString();
+        return new StringBuilder(Messages.getMessage("InsertAnnotation")).append(annotationName).append("(").append(attributesStr).append(")").toString();
     }
 
     /**
