@@ -209,21 +209,46 @@ public class ManagedBeanDiagnosticsParticipant implements IJavaDiagnosticsPartic
                 //
                 // see: https://jakarta.ee/specifications/cdi/3.0/jakarta-cdi-spec-3.0#
                 // observer_methods
+                //
+                // Two scenarios to detect:
+                // 1. A single parameter with both @Observes AND @ObservesAsync
+                // 2. Multiple parameters where each has at least one of @Observes or @ObservesAsync
                 Set<String> conflictParams = new HashSet<>();
+                List<String> paramsWithObserverAnnotations = new ArrayList<>();
+
                 for (ILocalVariable param : method.getParameters()) {
                     String[] annotationQualifiedNames = Stream.of(param.getAnnotations()).map(annotation -> annotation.getElementName()).toArray(String[]::new);
                     String[] conflictedParamAnnotations = Constants.INVALID_OBSERVES_OBSERVES_ASYNC_CONFLICTED_PARAMS.toArray(String[]::new);
                     Set<String> observesObservesAsync = new HashSet<>(DiagnosticUtils.getMatchedJavaElementNames(type, annotationQualifiedNames, conflictedParamAnnotations));
+
+                    // Scenario 1: Check if this parameter has both @Observes AND @ObservesAsync
                     if (observesObservesAsync.equals(Constants.INVALID_OBSERVES_OBSERVES_ASYNC_CONFLICTED_PARAMS)) {
                         conflictParams.add(param.getElementName());
                     }
+
+                    // Scenario 2: Track parameters that have at least one observer annotation
+                    if (!observesObservesAsync.isEmpty()) {
+                        paramsWithObserverAnnotations.add(param.getElementName());
+                    }
                 }
+
+                // Report error if a parameter has both annotations on it
                 if (!conflictParams.isEmpty()) {
                     Range range = PositionUtils.toNameRange(method, context.getUtils());
                     diagnostics.add(context.createDiagnostic(uri,
                                                              Messages.getMessage("ManagedBeanObservesAndObservesAsyncParam", String.join(", ", conflictParams)), range,
                                                              Constants.DIAGNOSTIC_SOURCE, null,
                                                              ErrorCode.InvalidObservesObservesAsyncMethodParams, DiagnosticSeverity.Error));
+                }
+
+                // Report error if method has more than one parameter with observer annotations
+                // (even if each parameter has only one type of observer annotation)
+                if (paramsWithObserverAnnotations.size() > 1) {
+                    Range range = PositionUtils.toNameRange(method, context.getUtils());
+                    diagnostics.add(context.createDiagnostic(uri,
+                                                             Messages.getMessage("ManagedBeanMultipleObserverParams", String.join(", ", paramsWithObserverAnnotations)), range,
+                                                             Constants.DIAGNOSTIC_SOURCE, null,
+                                                             ErrorCode.InvalidMultipleObserverParams, DiagnosticSeverity.Error));
                 }
 
             }
@@ -275,7 +300,8 @@ public class ManagedBeanDiagnosticsParticipant implements IJavaDiagnosticsPartic
                                                                                  new String[] { Constants.STATELESS_FQ_NAME }).size() > 0;
                 boolean isClassGeneric = type.getTypeParameters().length != 0;
                 Range range = PositionUtils.toNameRange(type, context.getUtils());
-
+                validateSingletonSessionBean(context, uri, diagnostics, type, typeAnnotations, managedBeanAnnotations,
+                                             range);
                 // A stateless session bean must belong to the @Dependent scope only
                 // If it has multiple scopes, it's an error
                 if (isStateless && (!isDependent || hasMultipleScopes)) {
@@ -377,6 +403,36 @@ public class ManagedBeanDiagnosticsParticipant implements IJavaDiagnosticsPartic
         }
 
         return diagnostics;
+    }
+
+    /**
+     * validateSingletonSessionBean
+     * Singleton session bean scope validation
+     * A singleton session bean must be annotated with either @ApplicationScoped or @Dependent.
+     * If a singleton bean declares any other scope, the container must treat it as a definition error.
+     *
+     * @param context
+     * @param uri
+     * @param diagnostics
+     * @param type
+     * @param typeAnnotations
+     * @param managedBeanAnnotations
+     * @param range
+     */
+    private void validateSingletonSessionBean(JavaDiagnosticsContext context, String uri, List<Diagnostic> diagnostics,
+                                              IType type, String[] typeAnnotations, List<String> managedBeanAnnotations, Range range) {
+        boolean isSingletonSessionBean = DiagnosticUtils.getMatchedJavaElementNames(type, typeAnnotations,
+                                                                                    new String[] { Constants.SINGLETON_FQ_NAME }).size() > 0;
+        if (isSingletonSessionBean) {
+            boolean hasInvalidSingletonScope = managedBeanAnnotations.stream().anyMatch(annotation -> !Constants.APPLICATION_SCOPED_FQ_NAME.equals(annotation)
+                                                                                                      && !Constants.DEPENDENT_FQ_NAME.equals(annotation));
+            if (hasInvalidSingletonScope) {
+                diagnostics.add(context.createDiagnostic(uri,
+                                                         Messages.getMessage("SingletonSessionBeanInvalidScope"), range,
+                                                         Constants.DIAGNOSTIC_SOURCE, (new Gson().toJsonTree(managedBeanAnnotations)),
+                                                         ErrorCode.InvalidSingletonSessionBeanScope, DiagnosticSeverity.Error));
+            }
+        }
     }
 
     private void invalidParamsCheck(JavaDiagnosticsContext context, String uri, ICompilationUnit unit,
