@@ -444,7 +444,7 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         // This confirms that primary keys on getter methods in @MappedSuperclass are correctly recognized
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
     }
-    
+
     @Test
     public void testDuplicateVersionInClass() throws Exception {
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
@@ -456,11 +456,11 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
         diagnosticsParams.setUris(Arrays.asList(uri));
 
-        Diagnostic duplicateVersionD1 = d(9, 16, 24,
+        Diagnostic duplicateVersionD1 = d(10, 16, 24,
                                           "Multiple fields or properties are annotated with @Version. Only one @Version annotation is allowed per entity class.",
                                           DiagnosticSeverity.Error, "jakarta-persistence", "DuplicateVersionAnnotationInClass");
 
-        Diagnostic duplicateVersionD2 = d(12, 16, 24,
+        Diagnostic duplicateVersionD2 = d(13, 16, 24,
                                           "Multiple fields or properties are annotated with @Version. Only one @Version annotation is allowed per entity class.",
                                           DiagnosticSeverity.Error, "jakarta-persistence", "DuplicateVersionAnnotationInClass");
 
@@ -478,7 +478,7 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
         diagnosticsParams.setUris(Arrays.asList(uri));
 
-        Diagnostic versionInHierarchyD1 = d(9, 16, 28,
+        Diagnostic versionInHierarchyD1 = d(10, 16, 28,
                                             "The @Version annotation is already present in the parent entity class. Only one @Version annotation is allowed in the entity hierarchy.",
                                             DiagnosticSeverity.Error, "jakarta-persistence", "DuplicateVersionAnnotationInHierarchy");
 
@@ -496,11 +496,11 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
         diagnosticsParams.setUris(Arrays.asList(uri));
 
-        Diagnostic duplicateVersionOnMethodsD1 = d(16, 15, 26,
+        Diagnostic duplicateVersionOnMethodsD1 = d(19, 15, 26,
                                                    "Multiple fields or properties are annotated with @Version. Only one @Version annotation is allowed per entity class.",
                                                    DiagnosticSeverity.Error, "jakarta-persistence", "DuplicateVersionAnnotationInClass");
 
-        Diagnostic duplicateVersionOnMethodsD2 = d(25, 15, 26,
+        Diagnostic duplicateVersionOnMethodsD2 = d(28, 15, 26,
                                                    "Multiple fields or properties are annotated with @Version. Only one @Version annotation is allowed per entity class.",
                                                    DiagnosticSeverity.Error, "jakarta-persistence", "DuplicateVersionAnnotationInClass");
 
@@ -518,7 +518,7 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
         diagnosticsParams.setUris(Arrays.asList(uri));
 
-        Diagnostic versionInHierarchyOnMethodsD1 = d(15, 15, 30,
+        Diagnostic versionInHierarchyOnMethodsD1 = d(18, 15, 30,
                                                      "The @Version annotation is already present in the parent entity class. Only one @Version annotation is allowed in the entity hierarchy.",
                                                      DiagnosticSeverity.Error, "jakarta-persistence", "DuplicateVersionAnnotationInHierarchy");
 

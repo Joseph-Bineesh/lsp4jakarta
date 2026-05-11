@@ -1,11 +1,14 @@
 package io.openliberty.sample.jakarta.persistence;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 
 @Entity
 public class VersionInHierarchyChildMethod extends VersionInHierarchyParentMethod {
     
+	@Id
+	private int id;
     private int childVersion;
     private String description;
     

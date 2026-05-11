@@ -58,8 +58,8 @@ import org.eclipse.lsp4jakarta.jdt.internal.core.ls.JDTUtilsLSImpl;
  * annotations.
  */
 public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnosticsParticipant {
-	
-	private static final Logger LOGGER = Logger.getLogger(PersistenceEntityDiagnosticsParticipant.class.getName());
+
+    private static final Logger LOGGER = Logger.getLogger(PersistenceEntityDiagnosticsParticipant.class.getName());
 
     /**
      * {@inheritDoc}
@@ -435,7 +435,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
 
         return false;
     }
-    
+
     /**
      * Check if the given annotations contain @Id or @EmbeddedId
      *
@@ -450,7 +450,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                 return DiagnosticUtils.getMatchedJavaElementName(type, annotation.getElementName(),
                                                                  new String[] { Constants.ID, Constants.EMBEDDEDID }) != null;
             } catch (JavaModelException e) {
-            	LOGGER.warning("JavaModelException while processing annotation:"+annotation.getElementName());
+                LOGGER.warning("JavaModelException while processing annotation:" + annotation.getElementName());
                 return false;
             }
         });

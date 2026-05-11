@@ -2,10 +2,13 @@ package io.openliberty.sample.jakarta.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Version;
+import jakarta.persistence.Id;
 
 @Entity
 public class DuplicateVersionOnMethods {
     
+	@Id
+	private int id;
     private int version1;
     private int version2;
     private String name;
