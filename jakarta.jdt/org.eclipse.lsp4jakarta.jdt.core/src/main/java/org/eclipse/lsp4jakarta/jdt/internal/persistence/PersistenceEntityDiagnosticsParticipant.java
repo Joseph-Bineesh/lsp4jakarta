@@ -98,7 +98,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                 boolean hasPrimaryKey = false;
 
                 // Validate @Version annotations
-                validateVersionAnnotations(type, diagnostics, context);
+                validateVersionAnnotations(unit, type, diagnostics, context);
 
                 // Get the Methods of the annotated Class
                 for (IMethod method : type.getMethods()) {
@@ -325,23 +325,6 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
     }
 
     /**
-     * Checks if any annotation in the given array is a @Version annotation.
-     *
-     * @param type the type containing the annotations
-     * @param annotations the array of annotations to check
-     * @return true if any annotation is @Version, false otherwise
-     * @throws JavaModelException
-     */
-    private boolean hasVersionAnnotation(IType type, IAnnotation[] annotations) throws JavaModelException {
-        for (IAnnotation annotation : annotations) {
-            if (DiagnosticUtils.isMatchedJavaElement(type, annotation.getElementName(), Constants.VERSION)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Validates @Version annotations on entity class.
      * Checks for:
      * 1. Multiple @Version annotations within the same class
@@ -352,20 +335,20 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
      * @param context the diagnostics context
      * @throws JavaModelException
      */
-    private void validateVersionAnnotations(IType type, List<Diagnostic> diagnostics,
+    private void validateVersionAnnotations(ICompilationUnit unit, IType type, List<Diagnostic> diagnostics,
                                             JavaDiagnosticsContext context) throws JavaModelException {
         List<IMember> versionMembers = new ArrayList<>();
 
         // Check fields for @Version annotation
         for (IField field : type.getFields()) {
-            if (hasVersionAnnotation(type, field.getAnnotations())) {
+            if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
                 versionMembers.add(field);
             }
         }
 
         // Check methods for @Version annotation
         for (IMethod method : type.getMethods()) {
-            if (hasVersionAnnotation(type, method.getAnnotations())) {
+            if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
                 versionMembers.add(method);
             }
         }
@@ -382,7 +365,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
         }
 
         // Check for @Version in parent entity classes
-        if (versionMembers.size() > 0 && hasVersionInParentEntity(type)) {
+        if (versionMembers.size() > 0 && hasVersionInParentEntity(unit, type)) {
             for (IMember member : versionMembers) {
                 Range range = PositionUtils.toNameRange(member, context.getUtils());
                 diagnostics.add(context.createDiagnostic(context.getUri(),
@@ -400,31 +383,25 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
      * @return true if a parent entity has @Version annotation, false otherwise
      * @throws JavaModelException
      */
-    private boolean hasVersionInParentEntity(IType type) throws JavaModelException {
+    private boolean hasVersionInParentEntity(ICompilationUnit unit, IType type) throws JavaModelException {
         ITypeHierarchy hierarchy = type.newSupertypeHierarchy(new NullProgressMonitor());
         IType superclass = hierarchy.getSuperclass(type);
 
         while (superclass != null && !superclass.getFullyQualifiedName().equals(Constants.OBJECT)) {
             // Check if parent class is an entity
-            boolean isEntity = false;
-            for (IAnnotation annotation : superclass.getAnnotations()) {
-                if (DiagnosticUtils.isMatchedJavaElement(superclass, annotation.getElementName(), Constants.ENTITY)) {
-                    isEntity = true;
-                    break;
-                }
-            }
+            boolean isEntity = DiagnosticUtils.isMatchedAnnotation(unit, superclass.getAnnotations(), Constants.ENTITY);
 
             if (isEntity) {
                 // Check if parent entity has @Version annotation on fields
                 for (IField field : superclass.getFields()) {
-                    if (hasVersionAnnotation(superclass, field.getAnnotations())) {
+                    if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
                         return true;
                     }
                 }
 
                 // Check if parent entity has @Version annotation on methods
                 for (IMethod method : superclass.getMethods()) {
-                    if (hasVersionAnnotation(superclass, method.getAnnotations())) {
+                    if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
                         return true;
                     }
                 }
