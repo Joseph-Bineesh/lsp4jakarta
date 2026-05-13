@@ -105,6 +105,7 @@ public class AnnotationValueExpressionUtil {
             return convertObjectToExpression(ast, value);
         }
 
+        logUnableToCreateDefaultValue();
         return ast.newNullLiteral();
 
     }
