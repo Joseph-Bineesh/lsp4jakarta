@@ -355,24 +355,33 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
 
         // Check for duplicate @Version in the same class
         if (versionMembers.size() > 1) {
-            for (IMember member : versionMembers) {
-                Range range = PositionUtils.toNameRange(member, context.getUtils());
-                diagnostics.add(context.createDiagnostic(context.getUri(),
-                                                         Messages.getMessage("DuplicateVersionAnnotation"), range,
-                                                         Constants.DIAGNOSTIC_SOURCE, null,
-                                                         ErrorCode.DuplicateVersionAnnotationInClass, DiagnosticSeverity.Error));
-            }
+            createVersionAnnotationDiagnostics(versionMembers, diagnostics, context, "DuplicateVersionAnnotation",
+                                               ErrorCode.DuplicateVersionAnnotationInClass);
         }
 
         // Check for @Version in parent entity classes
         if (versionMembers.size() > 0 && hasVersionInParentEntity(unit, type)) {
-            for (IMember member : versionMembers) {
-                Range range = PositionUtils.toNameRange(member, context.getUtils());
-                diagnostics.add(context.createDiagnostic(context.getUri(),
-                                                         Messages.getMessage("VersionAnnotationInHierarchy"), range,
-                                                         Constants.DIAGNOSTIC_SOURCE, null,
-                                                         ErrorCode.DuplicateVersionAnnotationInHierarchy, DiagnosticSeverity.Error));
-            }
+            createVersionAnnotationDiagnostics(versionMembers, diagnostics, context, "VersionAnnotationInHierarchy",
+                                               ErrorCode.DuplicateVersionAnnotationInHierarchy);
+        }
+    }
+
+    /**
+     * Create diagnostics for @Version annotation for class level or hierarchy level
+     *
+     * @param versionMembers
+     * @param diagnostics
+     * @param context
+     * @param mCode
+     * @param eCode
+     * @throws JavaModelException
+     */
+    private void createVersionAnnotationDiagnostics(List<IMember> versionMembers, List<Diagnostic> diagnostics,
+                                                    JavaDiagnosticsContext context, String mCode, ErrorCode eCode) throws JavaModelException {
+        for (IMember member : versionMembers) {
+            Range range = PositionUtils.toNameRange(member, context.getUtils());
+            diagnostics.add(context.createDiagnostic(context.getUri(), Messages.getMessage(mCode), range,
+                                                     Constants.DIAGNOSTIC_SOURCE, null, eCode, DiagnosticSeverity.Error));
         }
     }
 
