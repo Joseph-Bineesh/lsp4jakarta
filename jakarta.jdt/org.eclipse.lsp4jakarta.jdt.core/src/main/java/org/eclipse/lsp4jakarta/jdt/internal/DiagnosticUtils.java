@@ -91,9 +91,9 @@ public class DiagnosticUtils {
      * @return
      * @throws JavaModelException
      */
-    public static boolean isMatchedAnnotation(ICompilationUnit unit, IAnnotation[] annotations, String annotationFQName) throws JavaModelException {
+    public static boolean isMatchedAnnotation(IType type, IAnnotation[] annotations, String annotationFQName) throws JavaModelException {
         for (IAnnotation annotation : annotations) {
-            if (isMatchedAnnotation(unit, annotation, annotationFQName)) {
+            if (isMatchedJavaElement(type, annotation.getElementName(), annotationFQName)) {
                 return true;
             }
         }

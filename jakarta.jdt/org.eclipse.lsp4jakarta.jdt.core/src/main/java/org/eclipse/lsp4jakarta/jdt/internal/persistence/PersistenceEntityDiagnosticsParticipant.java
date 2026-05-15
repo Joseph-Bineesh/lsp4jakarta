@@ -341,14 +341,14 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
 
         // Check fields for @Version annotation
         for (IField field : type.getFields()) {
-            if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
+            if (DiagnosticUtils.isMatchedAnnotation(type, field.getAnnotations(), Constants.VERSION)) {
                 versionMembers.add(field);
             }
         }
 
         // Check methods for @Version annotation
         for (IMethod method : type.getMethods()) {
-            if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
+            if (DiagnosticUtils.isMatchedAnnotation(type, method.getAnnotations(), Constants.VERSION)) {
                 versionMembers.add(method);
             }
         }
@@ -398,19 +398,19 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
 
         while (superclass != null && !superclass.getFullyQualifiedName().equals(Constants.OBJECT)) {
             // Check if parent class is an entity
-            boolean isEntity = DiagnosticUtils.isMatchedAnnotation(unit, superclass.getAnnotations(), Constants.ENTITY);
+            boolean isEntity = DiagnosticUtils.isMatchedAnnotation(superclass, superclass.getAnnotations(), Constants.MAPPEDSUPERCLASS);
 
             if (isEntity) {
                 // Check if parent entity has @Version annotation on fields
                 for (IField field : superclass.getFields()) {
-                    if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
+                    if (DiagnosticUtils.isMatchedAnnotation(superclass, field.getAnnotations(), Constants.VERSION)) {
                         return true;
                     }
                 }
 
                 // Check if parent entity has @Version annotation on methods
                 for (IMethod method : superclass.getMethods()) {
-                    if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
+                    if (DiagnosticUtils.isMatchedAnnotation(superclass, method.getAnnotations(), Constants.VERSION)) {
                         return true;
                     }
                 }

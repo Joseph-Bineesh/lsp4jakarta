@@ -1,13 +1,14 @@
 package io.openliberty.sample.jakarta.persistence;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 
-@Entity
+@MappedSuperclass
 public class VersionInHierarchyParent {
     
     @Version
-    private int version;
+    private int version; 
     
     private String name;
     
