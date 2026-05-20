@@ -96,12 +96,16 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                 boolean hasArgConstructor = false;
                 boolean isEntityClassFinal = false;
                 boolean hasPrimaryKey = false;
-
-                // Validate @Version annotations
-                validateVersionAnnotations(unit, type, diagnostics, context);
+                List<IMember> versionMembers = new ArrayList<>();
 
                 // Get the Methods of the annotated Class
                 for (IMethod method : type.getMethods()) {
+                	
+                	// check @version annotation usage on methods
+                    if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
+                        versionMembers.add(method);
+                    }
+
                     if (DiagnosticUtils.isConstructorMethod(method)) {
                         // We have found a method that is a constructor
                         if (method.getNumberOfParameters() > 0) {
@@ -134,6 +138,12 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
 
                 // Go through the instance variables and make sure no instance vars are final
                 for (IField field : type.getFields()) {
+
+                	// check @version annotation usage on fields
+                    if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
+                        versionMembers.add(field);
+                    }
+
                     // If a field is static, we do not care about it, we care about all other field
                     if (isStatic(field.getFlags())) {
                         continue;
@@ -189,6 +199,10 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                                                              Messages.getMessage("EntityMissingPrimaryKey", type.getElementName()), range,
                                                              Constants.DIAGNOSTIC_SOURCE, null,
                                                              ErrorCode.MissingPrimaryKey, DiagnosticSeverity.Error));
+                }
+
+                if (!versionMembers.isEmpty()) {
+                    validateVersionAnnotations(versionMembers, unit, type, diagnostics, context);
                 }
             }
         }
@@ -330,28 +344,14 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
      * 1. Multiple @Version annotations within the same class
      * 2. @Version annotation in both parent and child entity classes
      *
+     * @param versionMembers member elements has version annotation
      * @param type the entity class type
      * @param diagnostics list to add diagnostics to
      * @param context the diagnostics context
      * @throws JavaModelException
      */
-    private void validateVersionAnnotations(ICompilationUnit unit, IType type, List<Diagnostic> diagnostics,
+    private void validateVersionAnnotations(List<IMember> versionMembers, ICompilationUnit unit, IType type, List<Diagnostic> diagnostics,
                                             JavaDiagnosticsContext context) throws JavaModelException {
-        List<IMember> versionMembers = new ArrayList<>();
-
-        // Check fields for @Version annotation
-        for (IField field : type.getFields()) {
-            if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
-                versionMembers.add(field);
-            }
-        }
-
-        // Check methods for @Version annotation
-        for (IMethod method : type.getMethods()) {
-            if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
-                versionMembers.add(method);
-            }
-        }
 
         // Check for duplicate @Version in the same class
         if (versionMembers.size() > 1) {
