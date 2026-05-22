@@ -391,7 +391,10 @@
       <codeAction kind="quickfix"
                   targetDiagnostic="jakarta-cdi#InvalidDisposerMethodParamAnnotation"
                   class="org.eclipse.lsp4jakarta.jdt.internal.cdi.RemoveInvalidDisposerConflictParamAnnotationQuickFix" />
-   </extension>
+      <codeAction kind="quickfix"
+                  targetDiagnostic="jakarta-cdi#InvalidMultipleObserverParams"
+                  class="org.eclipse.lsp4jakarta.jdt.internal.cdi.RemoveMultipleObserverParamsQuickFix" />
+  </extension>
    
    <!-- Interceptor -->
    <extension point="org.eclipse.lsp4jakarta.jdt.core.javaFeatureParticipants">
