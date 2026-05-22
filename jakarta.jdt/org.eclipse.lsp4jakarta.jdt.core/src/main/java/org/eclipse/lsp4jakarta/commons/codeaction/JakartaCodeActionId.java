@@ -46,6 +46,7 @@ public enum JakartaCodeActionId implements ICodeActionId {
     DIRemoveFinalModifier,
     DIRemoveAbstractModifier,
     DIRemoveStaticModifier,
+    DIRemoveScopeAttributes,
     // JSON-B
     JSONBRemoveJsonbCreatorAnnotation,
     JSONBRemoveJsonbTransientAnnotation,
