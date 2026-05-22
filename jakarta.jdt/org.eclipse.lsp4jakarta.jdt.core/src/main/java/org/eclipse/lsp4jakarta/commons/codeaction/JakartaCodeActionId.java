@@ -50,6 +50,8 @@ public enum JakartaCodeActionId implements ICodeActionId {
     JSONBRemoveJsonbCreatorAnnotation,
     JSONBRemoveJsonbTransientAnnotation,
     JSONBRemoveAllButJsonbTransientAnnotation,
+    JSONBChangeModifierToPublic,
+    JSONBChangeModifierToProtected,
     // Persistence
     PersistenceRemoveFinalModifier,
     PersistenceRemoveMapKeyAnnotation,
