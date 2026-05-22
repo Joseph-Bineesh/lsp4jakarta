@@ -207,6 +207,15 @@
       <codeAction kind="quickfix"
                   targetDiagnostic="jakarta-jsonb#InvalidJsonBNonPublicProtectedStaticNestedClass"
                   class="org.eclipse.lsp4jakarta.jdt.internal.jsonb.ChangeModifierToProtectedQuickFix" />
+      <codeAction kind="quickfix"
+                  targetDiagnostic="jakarta-jsonb#InvalidJsonBNoArgsConstructorMissing"
+                  class="org.eclipse.lsp4jakarta.jdt.internal.jsonb.InsertDefaultPublicConstructorQuickFix" />
+      <codeAction kind="quickfix"
+                  targetDiagnostic="jakarta-jsonb#InvalidJsonBNoArgsConstructorMissing"
+                  class="org.eclipse.lsp4jakarta.jdt.internal.jsonb.InsertDefaultProtectedConstructorQuickFix" />
+      <codeAction kind="quickfix"
+                  targetDiagnostic="jakarta-jsonb#InvalidJsonBNonStaticInnerClass"
+                  class="org.eclipse.lsp4jakarta.jdt.internal.jsonb.InsertStaticModifierQuickFix" />
    </extension>
    
    <!-- JSON-P -->

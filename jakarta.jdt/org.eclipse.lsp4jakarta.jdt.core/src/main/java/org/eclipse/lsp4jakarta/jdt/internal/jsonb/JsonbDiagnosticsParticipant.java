@@ -74,7 +74,6 @@ public class JsonbDiagnosticsParticipant implements IJavaDiagnosticsParticipant 
         IMethod[] methods;
         IAnnotation[] allAnnotations;
         boolean jsonbtypeParent = false; //Variable for checking parent class is JSONB type or not
-        boolean isInnerClass = false; //Variable to check if inner class or not
         //Variables for determining invalid constructor in parent and child classes
         boolean parentHasValidNoArgsConstructor;
         boolean childHasValidNoArgsConstructor;
@@ -88,6 +87,7 @@ public class JsonbDiagnosticsParticipant implements IJavaDiagnosticsParticipant 
             missingParentNoArgsConstructor = false;
             missingChildNoArgsConstructor = false;
             hasConstructor = false;
+            boolean isInnerClass = type.getDeclaringType() != null; //Variable to check if inner class or not
             jsonbtypeParent = false;
             methods = type.getMethods();
             List<IMethod> jonbMethods = new ArrayList<IMethod>();
@@ -125,7 +125,6 @@ public class JsonbDiagnosticsParticipant implements IJavaDiagnosticsParticipant 
             //Changes to detect if Jsonb property names are not unique
             Set<String> propertyNames = new LinkedHashSet<String>();
             Set<String> uniquePropertyNames = new LinkedHashSet<String>();
-            isInnerClass = type.getDeclaringType() != null;
             //Checks whether parent class is JSONB type by checking class level annotations
             if (!isInnerClass) {
                 jsonbtypeParent = Arrays.stream(type.getAnnotations()).anyMatch(annotation -> {
