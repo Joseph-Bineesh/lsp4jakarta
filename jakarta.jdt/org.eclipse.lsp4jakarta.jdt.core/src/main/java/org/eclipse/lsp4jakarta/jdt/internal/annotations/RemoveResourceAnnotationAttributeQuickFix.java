@@ -13,6 +13,7 @@
 
 package org.eclipse.lsp4jakarta.jdt.internal.annotations;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.lsp4jakarta.commons.codeaction.JakartaCodeActionId;
@@ -28,7 +29,7 @@ public class RemoveResourceAnnotationAttributeQuickFix extends RemoveAnnotationA
      * Constructor.
      */
     public RemoveResourceAnnotationAttributeQuickFix() {
-        super("jakarta.annotation.Resource", List.of("type"));
+        super(Collections.singletonMap(Constants.RESOURCE_FQ_NAME, List.of("type")), false);
     }
 
     /**
@@ -47,7 +48,7 @@ public class RemoveResourceAnnotationAttributeQuickFix extends RemoveAnnotationA
         return JakartaCodeActionId.RemoveResourceAnnotationAttribute;
     }
 
-    protected String getLabel() {
+    protected String getLabel(String annotation, String[] attributes) {
         return Messages.getMessage("RemoveRedundantAttribute", "type", "Resource");
     }
 }
