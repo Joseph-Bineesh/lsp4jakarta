@@ -128,7 +128,7 @@ public class InterceptorTest extends BaseJakartaTest {
 
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, observesMethodDiagnostic, observesAsyncMethodDiagnostic);
     }
-  
+
     @Test
     public void invalidInterceptorMethodProceedTest() throws Exception {
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
