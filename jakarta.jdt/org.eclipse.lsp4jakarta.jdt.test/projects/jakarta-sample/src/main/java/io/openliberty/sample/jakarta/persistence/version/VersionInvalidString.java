@@ -12,5 +12,3 @@ public class VersionInvalidString {
     @Version
     private String version; // Invalid - String not supported
 }
-
-// Made with Bob

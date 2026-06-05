@@ -14,4 +14,3 @@ public class VersionValidTimestamp {
     private Timestamp version; // Valid - java.sql.Timestamp
 }
 
-// Made with Bob

@@ -13,4 +13,3 @@ public class VersionValidInt {
     private int version; // Valid - primitive int
 }
 
-// Made with Bob
