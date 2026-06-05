@@ -494,6 +494,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
         return false;
     }
 
+
     /**
      * Validates that a field or method annotated with @Version has a supported type.
      * Supported types are: int, Integer, short, Short, long, Long, java.sql.Timestamp
