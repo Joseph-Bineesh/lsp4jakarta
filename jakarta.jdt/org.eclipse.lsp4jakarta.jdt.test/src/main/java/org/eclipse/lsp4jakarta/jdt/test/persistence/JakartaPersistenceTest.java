@@ -41,6 +41,18 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
 
     @Test
     public void deleteMapKeyOrMapKeyClass() throws Exception {
+        System.out.println("Diagnostic loader =============== "
+                           + org.eclipse.lsp4j.Diagnostic.class.getClassLoader());
+
+        System.out.println("Range loader =================== "
+                           + org.eclipse.lsp4j.Range.class.getClassLoader());
+
+        System.out.println("Diagnostic bundle ================ "
+                           + org.eclipse.core.runtime.Platform.getBundle("org.eclipse.lsp4j"));
+
+        System.out.println("Range class ================== "
+                           + org.eclipse.lsp4j.Range.class.getProtectionDomain().getCodeSource());
+
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
 
         IFile javaFile = javaProject.getProject().getFile(

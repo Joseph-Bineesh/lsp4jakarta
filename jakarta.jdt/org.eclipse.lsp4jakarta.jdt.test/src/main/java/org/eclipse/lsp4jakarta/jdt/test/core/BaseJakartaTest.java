@@ -27,9 +27,11 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.launching.JavaRuntime;
 
 /**
  * Modified from:
@@ -80,6 +82,28 @@ public class BaseJakartaTest {
             // Create and open project within workspace lock to prevent conflicts
             project.create(description, null);
             project.open(null);
+
+            // Get the Java project
+            IJavaProject javaProject = JavaCore.create(project);
+
+            // Add default JRE system library to classpath if not already present
+            IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
+            boolean hasJREContainer = false;
+            for (IClasspathEntry entry : rawClasspath) {
+                if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER &&
+                    entry.getPath().segment(0).equals(JavaRuntime.JRE_CONTAINER)) {
+                    hasJREContainer = true;
+                    break;
+                }
+            }
+
+            if (!hasJREContainer) {
+                // Add default JRE container to classpath
+                IClasspathEntry[] newClasspath = new IClasspathEntry[rawClasspath.length + 1];
+                System.arraycopy(rawClasspath, 0, newClasspath, 0, rawClasspath.length);
+                newClasspath[rawClasspath.length] = JavaRuntime.getDefaultJREContainerEntry();
+                javaProject.setRawClasspath(newClasspath, null);
+            }
 
             // We need to call waitForBackgroundJobs with a Job which does nothing to have a
             // resolved classpath (IJavaProject#getResolvedClasspath) when search is done.
