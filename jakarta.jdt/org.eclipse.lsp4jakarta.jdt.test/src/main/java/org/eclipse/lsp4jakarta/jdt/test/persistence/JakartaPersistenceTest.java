@@ -600,4 +600,35 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
     }
 
+    @Test
+    public void testVersionMethodInvalidStringType() throws Exception {
+        IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
+        IFile javaFile = javaProject.getProject().getFile(
+                                                          new Path("src/main/java/io/openliberty/sample/jakarta/persistence/version/VersionMethodInvalidString.java"));
+        String uri = javaFile.getLocation().toFile().toURI().toString();
+
+        JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
+        diagnosticsParams.setUris(Arrays.asList(uri));
+
+        Diagnostic d1 = d(14, 18, 28,
+                          "A field or property annotated with @Version must be of type int, Integer, short, Short, long, Long, or java.sql.Timestamp.",
+                          DiagnosticSeverity.Error, "jakarta-persistence", "InvalidVersionFieldType");
+
+        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, d1);
+    }
+
+    @Test
+    public void testVersionMethodValidLongType() throws Exception {
+        IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
+        IFile javaFile = javaProject.getProject().getFile(
+                                                          new Path("src/main/java/io/openliberty/sample/jakarta/persistence/version/VersionMethodValidLong.java"));
+        String uri = javaFile.getLocation().toFile().toURI().toString();
+
+        JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
+        diagnosticsParams.setUris(Arrays.asList(uri));
+
+        // Verify that NO diagnostics are produced for valid Long return type
+        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
+    }
+
 }
