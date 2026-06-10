@@ -565,11 +565,11 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
         diagnosticsParams.setUris(Arrays.asList(uri));
 
-        Diagnostic d1 = d(12, 19, 26,
-                          "A field or property annotated with @Version must be of type int, Integer, short, Short, long, Long, or java.sql.Timestamp.",
-                          DiagnosticSeverity.Error, "jakarta-persistence", "InvalidVersionFieldType");
+        Diagnostic invalidStringD1 = d(12, 19, 26,
+                                       "A field or property annotated with @Version must be of type int, Integer, short, Short, long, Long, or java.sql.Timestamp.",
+                                       DiagnosticSeverity.Error, "jakarta-persistence", "InvalidVersionFieldOrPropertyType");
 
-        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, d1);
+        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, invalidStringD1);
     }
 
     @Test
@@ -610,11 +610,11 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
         diagnosticsParams.setUris(Arrays.asList(uri));
 
-        Diagnostic d1 = d(14, 18, 28,
-                          "A field or property annotated with @Version must be of type int, Integer, short, Short, long, Long, or java.sql.Timestamp.",
-                          DiagnosticSeverity.Error, "jakarta-persistence", "InvalidVersionFieldType");
+        Diagnostic invalidStringD1 = d(14, 18, 28,
+                                       "A field or property annotated with @Version must be of type int, Integer, short, Short, long, Long, or java.sql.Timestamp.",
+                                       DiagnosticSeverity.Error, "jakarta-persistence", "InvalidVersionFieldOrPropertyType");
 
-        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, d1);
+        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, invalidStringD1);
     }
 
     @Test

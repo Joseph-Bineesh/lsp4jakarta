@@ -104,7 +104,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     // check @version annotation usage on methods
                     if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
                         versionMembers.add(method);
-                        validateVersionFieldType(method, type, diagnostics, context);
+                        validateVersionFieldOrPropertyType(method, type, diagnostics, context);
                     }
 
                     if (DiagnosticUtils.isConstructorMethod(method)) {
@@ -143,7 +143,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     // check @version annotation usage on fields
                     if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
                         versionMembers.add(field);
-                        validateVersionFieldType(field, type, diagnostics, context);
+                        validateVersionFieldOrPropertyType(field, type, diagnostics, context);
                     }
 
                     // If a field is static, we do not care about it, we care about all other field
@@ -504,8 +504,8 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
      * @param context the diagnostics context
      * @throws JavaModelException
      */
-    private void validateVersionFieldType(IMember member, IType type, List<Diagnostic> diagnostics,
-                                          JavaDiagnosticsContext context) throws JavaModelException {
+    private void validateVersionFieldOrPropertyType(IMember member, IType type, List<Diagnostic> diagnostics,
+                                                    JavaDiagnosticsContext context) throws JavaModelException {
         String typeFQ = null;
         Range range = null;
 
@@ -519,9 +519,9 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
 
         if (typeFQ != null && !isValidVersionType(typeFQ)) {
             diagnostics.add(context.createDiagnostic(context.getUri(),
-                                                     Messages.getMessage("InvalidVersionFieldType"),
+                                                     Messages.getMessage("InvalidVersionFieldOrPropertyType"),
                                                      range, Constants.DIAGNOSTIC_SOURCE, null,
-                                                     ErrorCode.InvalidVersionFieldType, DiagnosticSeverity.Error));
+                                                     ErrorCode.InvalidVersionFieldOrPropertyType, DiagnosticSeverity.Error));
         }
     }
 
