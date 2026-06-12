@@ -517,22 +517,12 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
             range = PositionUtils.toNameRange((IField) member, context.getUtils());
         }
 
-        if (typeFQ != null && !isValidVersionType(typeFQ)) {
+        if (typeFQ != null && !Constants.VALID_VERSION_TYPES.contains(typeFQ)) {
             diagnostics.add(context.createDiagnostic(context.getUri(),
                                                      Messages.getMessage("InvalidVersionFieldOrPropertyType"),
                                                      range, Constants.DIAGNOSTIC_SOURCE, null,
                                                      ErrorCode.InvalidVersionFieldOrPropertyType, DiagnosticSeverity.Error));
         }
-    }
-
-    /**
-     * Checks if the given type is a valid @Version field type.
-     *
-     * @param typeFQ the fully qualified type name
-     * @return true if the type is valid for @Version annotation
-     */
-    private boolean isValidVersionType(String typeFQ) {
-        return Arrays.asList(Constants.VALID_VERSION_TYPES).contains(typeFQ);
     }
 
 }

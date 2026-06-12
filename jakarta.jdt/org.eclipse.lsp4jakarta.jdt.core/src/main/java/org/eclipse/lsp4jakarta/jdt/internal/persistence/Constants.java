@@ -13,6 +13,8 @@
 
 package org.eclipse.lsp4jakarta.jdt.internal.persistence;
 
+import java.util.Set;
+
 /**
  * Persistence diagnostic constants.
  */
@@ -32,11 +34,8 @@ public class Constants {
     public static final String SQL_TIMESTAMP = "java.sql.Timestamp";
 
     /* Valid @Version field types */
-    public static final String[] VALID_VERSION_TYPES = {
-                                                         "int", "short", "long",
-                                                         "java.lang.Integer", "java.lang.Short", "java.lang.Long",
-                                                         SQL_TIMESTAMP
-    };
+    public static final Set<String> VALID_VERSION_TYPES = Set.of("int", "short", "long", "java.lang.Integer",
+                                                                 "java.lang.Short", "java.lang.Long", SQL_TIMESTAMP);
 
     /* Annotation Fields */
     public static final String NAME = "name";
