@@ -39,5 +39,3 @@ public class MapKeyTemporalInvalid {
         this.stringEvents = stringEvents;
     }
 }
-
-// Made with Bob

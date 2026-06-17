@@ -43,4 +43,3 @@ public class RemoveMapKeyTemporalAnnotationQuickFix extends RemoveAnnotationConf
         return JakartaCodeActionId.PersistenceRemoveMapKeyTemporalAnnotation;
     }
 }
-
