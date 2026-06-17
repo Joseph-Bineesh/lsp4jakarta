@@ -133,6 +133,7 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
             mapKeyJoinCols = new ArrayList<IAnnotation>();
             hasMapKeyAnnotation = false;
             hasMapKeyClassAnnotation = false;
+            hasMapKeyTemporalAnnotation = false;
             allAnnotations = null;
 
             if (member instanceof IMethod) {
