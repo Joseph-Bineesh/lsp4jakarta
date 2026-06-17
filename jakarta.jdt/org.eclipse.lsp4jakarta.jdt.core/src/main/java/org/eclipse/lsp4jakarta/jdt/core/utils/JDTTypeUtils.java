@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.IJarEntryResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -363,5 +364,51 @@ public class JDTTypeUtils {
      */
     public static boolean isVoidReturnType(IMethod method) throws JavaModelException {
         return SIG_VOID.equals(method.getReturnType());
+    }
+
+    /**
+     * Returns the resolved type arguments for a parameterized type.
+     *
+     * @param member the field or method
+     * @return array of fully qualified type argument names, or null if not a parameterized type
+     */
+    public static String[] getResolvedTypeArguments(IMember member) {
+        try {
+            String typeSignature = null;
+            if (member instanceof IMethod) {
+                typeSignature = ((IMethod) member).getReturnType();
+            } else if (member instanceof IField) {
+                typeSignature = ((IField) member).getTypeSignature();
+            }
+
+            if (typeSignature == null) {
+                return null;
+            }
+
+            // Try to extract type arguments (will return empty array if not parameterized)
+            String[] typeArguments = Signature.getTypeArguments(typeSignature);
+            if (typeArguments != null && typeArguments.length > 0) {
+                String[] resolvedTypes = new String[typeArguments.length];
+                IType declaringType = member.getDeclaringType();
+
+                for (int i = 0; i < typeArguments.length; i++) {
+                    String typeArgSignature = typeArguments[i];
+                    String typeName = Signature.toString(typeArgSignature);
+                    String[][] resolved = declaringType.resolveType(typeName);
+
+                    if (resolved != null && resolved.length > 0) {
+                        String packageName = resolved[0][0];
+                        String simpleTypeName = resolved[0][1];
+                        resolvedTypes[i] = packageName.isEmpty() ? simpleTypeName : packageName + "." + simpleTypeName;
+                    } else {
+                        resolvedTypes[i] = typeName;
+                    }
+                }
+                return resolvedTypes;
+            }
+        } catch (JavaModelException e) {
+            return null;
+        }
+        return null;
     }
 }
