@@ -630,7 +630,7 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         // Verify that NO diagnostics are produced for valid Long return type
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
     }
-    
+
     @Test
     public void testMapKeyTemporalValid() throws Exception {
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
