@@ -36,7 +36,9 @@ public enum ErrorCode implements IJavaErrorCode {
     InvalidValueInTemporalAnnotation,
     DuplicateVersionAnnotationInClass,
     DuplicateVersionAnnotationInHierarchy,
-    InvalidMapKeyTemporalOnNonTemporalType;
+    InvalidMapKeyTemporalOnNonTemporalType,
+    InvalidVersionFieldOrPropertyType;
+
 
     /**
      * {@inheritDoc}
