@@ -205,31 +205,20 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
         if (resolvedTypeName != null && JDTTypeUtils.isMap(resolvedTypeName)) {
             // Extract all type arguments from the parameterized Map type
             String[] typeArguments = JDTTypeUtils.getResolvedTypeArguments(member);
+            String mapKeyType = typeArguments != null && typeArguments.length > 0 ? typeArguments[0] : null;
 
-            if (typeArguments != null && typeArguments.length > 0) {
-                String mapKeyType = typeArguments[0];
+            // Check if the map key type is temporal (Date or Calendar)
+            boolean isTemporalType = Constants.UTIL_DATE.equals(mapKeyType)
+                                     || Constants.UTIL_CALENDAR.equals(mapKeyType);
 
-                // Check if the map key type is temporal (Date or Calendar)
-                boolean isTemporalType = Constants.UTIL_DATE.equals(mapKeyType) ||
-                                         Constants.UTIL_CALENDAR.equals(mapKeyType);
+            if (!isTemporalType) {
+                Range range = PositionUtils.toNameRange(member, context.getUtils());
+                diagnostics.add(context.createDiagnostic(context.getUri(),
+                                                         Messages.getMessage("MapKeyTemporalNotOnTemporalType"), range, Constants.DIAGNOSTIC_SOURCE,
+                                                         null, ErrorCode.InvalidMapKeyTemporalOnNonTemporalType, DiagnosticSeverity.Error));
 
-                if (!isTemporalType) {
-                    Range range = null;
-                    if (member instanceof IMethod) {
-                        range = PositionUtils.toNameRange((IMethod) member, context.getUtils());
-                    } else if (member instanceof IField) {
-                        range = PositionUtils.toNameRange((IField) member, context.getUtils());
-                    }
-
-                    if (range != null) {
-                        diagnostics.add(context.createDiagnostic(context.getUri(),
-                                                                 Messages.getMessage("MapKeyTemporalNotOnTemporalType"),
-                                                                 range, Constants.DIAGNOSTIC_SOURCE, null,
-                                                                 ErrorCode.InvalidMapKeyTemporalOnNonTemporalType,
-                                                                 DiagnosticSeverity.Error));
-                    }
-                }
             }
+
         }
     }
 

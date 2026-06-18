@@ -17,6 +17,7 @@ import static org.eclipse.jdt.core.Signature.SIG_VOID;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.Signature;
@@ -388,23 +389,23 @@ public class JDTTypeUtils {
             // Try to extract type arguments (will return empty array if not parameterized)
             String[] typeArguments = Signature.getTypeArguments(typeSignature);
             if (typeArguments != null && typeArguments.length > 0) {
-                String[] resolvedTypes = new String[typeArguments.length];
                 IType declaringType = member.getDeclaringType();
 
-                for (int i = 0; i < typeArguments.length; i++) {
-                    String typeArgSignature = typeArguments[i];
-                    String typeName = Signature.toString(typeArgSignature);
-                    String[][] resolved = declaringType.resolveType(typeName);
+                return Stream.of(typeArguments).map(typeArgSignature -> {
+                    try {
+                        String typeName = Signature.toString(typeArgSignature);
+                        String[][] resolved = declaringType.resolveType(typeName);
 
-                    if (resolved != null && resolved.length > 0) {
-                        String packageName = resolved[0][0];
-                        String simpleTypeName = resolved[0][1];
-                        resolvedTypes[i] = packageName.isEmpty() ? simpleTypeName : packageName + "." + simpleTypeName;
-                    } else {
-                        resolvedTypes[i] = typeName;
+                        if (resolved != null && resolved.length > 0) {
+                            String packageName = resolved[0][0];
+                            String simpleTypeName = resolved[0][1];
+                            return packageName.isEmpty() ? simpleTypeName : packageName + "." + simpleTypeName;
+                        }
+                        return typeName;
+                    } catch (JavaModelException e) {
+                        return Signature.toString(typeArgSignature);
                     }
-                }
-                return resolvedTypes;
+                }).toArray(String[]::new);
             }
         } catch (JavaModelException e) {
             return null;
