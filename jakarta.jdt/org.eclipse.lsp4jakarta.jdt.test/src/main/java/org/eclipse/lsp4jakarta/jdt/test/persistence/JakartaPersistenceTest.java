@@ -642,7 +642,7 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         diagnosticsParams.setUris(Arrays.asList(uri));
 
         // Verify that NO diagnostics are produced for valid @MapKeyTemporal usage
-        // with Date and Calendar map key types
+        // with Date and Calendar map key types (including FQN)
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
     }
 
@@ -676,8 +676,13 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
                                                 "@MapKeyTemporal can only be used when the map key type is java.util.Date or java.util.Calendar.",
                                                 DiagnosticSeverity.Error, "jakarta-persistence", "InvalidMapKeyTemporalOnNonTemporalType");
 
+        // Invalid: @MapKeyTemporal on FQN String map key (should still be detected)
+        Diagnostic mapKeyTemporalOnFqnStringD5 = d(44, 42, 57,
+                                                   "@MapKeyTemporal can only be used when the map key type is java.util.Date or java.util.Calendar.",
+                                                   DiagnosticSeverity.Error, "jakarta-persistence", "InvalidMapKeyTemporalOnNonTemporalType");
+
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, mapKeyTemporalOnStringD1, mapKeyTemporalOnIntegerD2,
-                              mapKeyTemporalOnLongD3, mapKeyTemporalOnGetterD4);
+                              mapKeyTemporalOnLongD3, mapKeyTemporalOnGetterD4, mapKeyTemporalOnFqnStringD5);
 
         // Test the quickfix for removing @MapKeyTemporal
         JakartaJavaCodeActionParams codeActionParams = createCodeActionParams(uri, mapKeyTemporalOnStringD1);

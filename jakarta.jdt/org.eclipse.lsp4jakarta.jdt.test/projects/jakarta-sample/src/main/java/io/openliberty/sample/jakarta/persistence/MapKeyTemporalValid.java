@@ -35,5 +35,15 @@ public class MapKeyTemporalValid {
     public void setDateEvents(Map<Date, String> dateEvents) {
         this.dateEvents = dateEvents;
     }
+    
+    // Valid: FQN Date map key
+    @ElementCollection
+    @MapKeyTemporal(TemporalType.DATE)
+    private Map<java.util.Date, String> fqnDateEvents;
+    
+    // Valid: FQN Calendar map key
+    @ElementCollection
+    @MapKeyTemporal(TemporalType.TIMESTAMP)
+    private Map<java.util.Calendar, String> fqnCalendarEvents;
 }
 

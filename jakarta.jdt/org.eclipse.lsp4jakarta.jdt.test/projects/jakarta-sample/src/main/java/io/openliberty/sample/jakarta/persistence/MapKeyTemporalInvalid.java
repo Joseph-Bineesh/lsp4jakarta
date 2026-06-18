@@ -38,4 +38,9 @@ public class MapKeyTemporalInvalid {
     public void setStringEvents(Map<String, String> stringEvents) {
         this.stringEvents = stringEvents;
     }
+    
+    // Invalid: FQN String map key (should still be detected as invalid)
+    @ElementCollection
+    @MapKeyTemporal(TemporalType.DATE)
+    private Map<java.lang.String, String> fqnStringEvents;
 }
