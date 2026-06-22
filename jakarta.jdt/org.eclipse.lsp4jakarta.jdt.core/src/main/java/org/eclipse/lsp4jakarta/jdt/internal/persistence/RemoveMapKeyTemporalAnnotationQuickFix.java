@@ -24,7 +24,7 @@ public class RemoveMapKeyTemporalAnnotationQuickFix extends RemoveAnnotationConf
      * Constructor.
      */
     public RemoveMapKeyTemporalAnnotationQuickFix() {
-        super(true, "jakarta.persistence.MapKeyTemporal");
+        super(true, Constants.MAPKEYTEMPORAL);
     }
 
     /**
