@@ -40,6 +40,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Range;
@@ -121,6 +122,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     }
 
                     validatePKDateTemporal(type, method, diagnostics, context);
+                    validateIdFieldOrPropertyType(method, unit, type, diagnostics, context);
 
                 }
 
@@ -152,6 +154,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     }
 
                     validatePKDateTemporal(type, field, diagnostics, context);
+                    validateIdFieldOrPropertyType(field, unit, type, diagnostics, context);
                 }
 
                 // Check superclass hierarchy for primary key in @MappedSuperclass
@@ -263,7 +266,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
         }
 
         if (id != null) {
-            if (typeFQ.equals(Constants.UTIL_DATE)) {
+            if (typeFQ != null && typeFQ.equals(Constants.UTIL_DATE)) {
                 if (temporal != null) {
                     // Check value
                     IMemberValuePair[] memberValuePairs = temporal.getMemberValuePairs();
@@ -511,6 +514,56 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                                                      Messages.getMessage("InvalidVersionFieldOrPropertyType"),
                                                      range, Constants.DIAGNOSTIC_SOURCE, null,
                                                      ErrorCode.InvalidVersionFieldOrPropertyType, DiagnosticSeverity.Error));
+        }
+    }
+
+    /**
+     * Validates that a field or method annotated with @Id has a supported type.
+     * Supported types are: primitives, wrapper types, String, Date types, BigDecimal, BigInteger
+     *
+     * @param member the field or method to validate
+     * @param type the containing type
+     * @param diagnostics list to add diagnostics to
+     * @param context the diagnostics context
+     * @throws JavaModelException
+     */
+    private void validateIdFieldOrPropertyType(IMember member, ICompilationUnit unit, IType type, List<Diagnostic> diagnostics,
+                                               JavaDiagnosticsContext context) throws JavaModelException {
+        String typeFQ = null;
+        Range range = null;
+        boolean hasIdAnnotation = false, isArrayType = false;
+
+        if (member instanceof IMethod) {
+            IMethod method = (IMethod) member;
+            // Check if method has @Id annotation
+            if (!DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.ID)) {
+                return;
+            }
+            hasIdAnnotation = true;
+            typeFQ = JDTTypeUtils.getResolvedResultTypeName(method);
+            isArrayType = JDTTypeUtils.isArray(method.getReturnType());
+            range = PositionUtils.toNameRange(method, context.getUtils());
+        } else if (member instanceof IField) {
+            IField field = (IField) member;
+            // Check if field has @Id annotation
+            if (!DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.ID)) {
+                return;
+            }
+            hasIdAnnotation = true;
+            typeFQ = JDTTypeUtils.getResolvedTypeName(field);
+            isArrayType = JDTTypeUtils.isArray(field.getTypeSignature());
+            range = PositionUtils.toNameRange(field, context.getUtils());
+        }
+
+        if (!hasIdAnnotation) {
+            return;
+        }
+
+        if (typeFQ != null && (isArrayType || !Constants.VALID_ID_TYPES.contains(typeFQ))) {
+            diagnostics.add(context.createDiagnostic(context.getUri(),
+                                                     Messages.getMessage("InvalidIdType"),
+                                                     range, Constants.DIAGNOSTIC_SOURCE, null,
+                                                     ErrorCode.InvalidIdType, DiagnosticSeverity.Error));
         }
     }
 
