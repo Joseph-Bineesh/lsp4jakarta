@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2019 Red Hat Inc. and others.
+* Copyright (c) 2019, 2026 Red Hat Inc. and others.
 *
 * This program and the accompanying materials are made available under the
 * terms of the Eclipse Public License v. 2.0 which is available at
@@ -30,6 +30,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 
 /**
@@ -363,5 +364,16 @@ public class JDTTypeUtils {
      */
     public static boolean isVoidReturnType(IMethod method) throws JavaModelException {
         return SIG_VOID.equals(method.getReturnType());
+    }
+
+    /**
+     * Returns true if the 'type' signature is an Array
+     *
+     * @param type - Signature type of field or method
+     * @return
+     * @throws JavaModelException
+     */
+    public static boolean isArray(String type) throws JavaModelException {
+        return Signature.getArrayCount(type) > 0;
     }
 }
