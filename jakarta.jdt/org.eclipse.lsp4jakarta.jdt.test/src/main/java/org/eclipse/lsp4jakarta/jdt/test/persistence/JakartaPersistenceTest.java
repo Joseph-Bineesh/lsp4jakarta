@@ -631,4 +631,68 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
     }
 
+    @Test
+    public void testInvalidIdType() throws Exception {
+        IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
+        IFile javaFile = javaProject.getProject().getFile(
+                                                          new Path("src/main/java/io/openliberty/sample/jakarta/persistence/InvalidIdType.java"));
+        String uri = javaFile.getLocation().toFile().toURI().toString();
+
+        JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
+        diagnosticsParams.setUris(Arrays.asList(uri));
+
+        // Invalid: Custom class type (line 16: private CustomType customId;)
+        Diagnostic customTypeD1 = d(15, 23, 31,
+                                    "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                    DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        // Invalid: UUID type (line 20: private UUID uuidId;)
+        Diagnostic uuidTypeD2 = d(19, 17, 23,
+                                  "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                  DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        // Invalid: Collection type (line 24: private List<String> listId;)
+        Diagnostic listTypeD3 = d(23, 25, 31,
+                                  "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                  DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        // Invalid: Object type (line 28: private Object objectId;)
+        Diagnostic objectTypeD4 = d(27, 19, 27,
+                                    "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                    DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        // Invalid: Array type (line 32: private int[] arrayId;)
+        Diagnostic arrayTypeD5 = d(31, 18, 25,
+                                   "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                   DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        // Invalid: Getter with CustomType return type (line 43: public CustomType getCustomId())
+        Diagnostic customTypeGetterD6 = d(42, 22, 33,
+                                          "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                          DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        // Invalid: Getter with UUID return type (line 49: public UUID getUuidId())
+        Diagnostic uuidTypeGetterD7 = d(48, 16, 25,
+                                        "The @Id annotation must use a valid identifier type (primitives, wrapper types, String, Date types, BigDecimal, or BigInteger).",
+                                        DiagnosticSeverity.Error, "jakarta-persistence", "InvalidIdType");
+
+        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS, customTypeD1, uuidTypeD2, listTypeD3,
+                              objectTypeD4, arrayTypeD5, customTypeGetterD6, uuidTypeGetterD7);
+    }
+
+    @Test
+    public void testValidIdTypes() throws Exception {
+        IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
+        IFile javaFile = javaProject.getProject().getFile(
+                                                          new Path("src/main/java/io/openliberty/sample/jakarta/persistence/ValidIdTypes.java"));
+        String uri = javaFile.getLocation().toFile().toURI().toString();
+
+        JakartaJavaDiagnosticsParams diagnosticsParams = new JakartaJavaDiagnosticsParams();
+        diagnosticsParams.setUris(Arrays.asList(uri));
+
+        // Verify that NO diagnostics are produced for valid @Id types
+        // This includes primitives, wrapper types, String, Date types, BigDecimal, and BigInteger
+        assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
+    }
+
 }
