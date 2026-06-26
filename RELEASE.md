@@ -22,6 +22,7 @@
         <classifier>jar-with-dependencies</classifier>
     </artifactItem>
     ```
+1. Verify that the tycho-versions-plugin in `Release.Jenkinsfile` matches the version defined in `jakarta.jdt/pom.xml`. If there is a mismatch, update `Release.Jenkinsfile` to use the same Tycho version as defined in the POM.
 1. Commit these changes to the branch and push to the LSP4Jakarta github repository (not a fork) e.g. `git push --set-upstream origin release-0.2.3` where `origin` refers to LSP4Jakarta.
 1. In a browser open https://ci.eclipse.org/lsp4jakarta/, click on `log in` and authenticate using an Eclipse.org id. This brings you to the Dashboard.
 1. Click on the flow `LSP4Jakarta Release` 
