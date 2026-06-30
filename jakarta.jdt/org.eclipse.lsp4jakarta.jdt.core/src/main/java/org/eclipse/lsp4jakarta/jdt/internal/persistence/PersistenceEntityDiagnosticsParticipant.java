@@ -104,7 +104,11 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     // check @version annotation usage on methods
                     if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.VERSION)) {
                         versionMembers.add(method);
-                        validateVersionFieldOrPropertyType(method, type, diagnostics, context);
+                        validateFieldOrPropertyType(method, type, diagnostics, context, Constants.VERSION);
+                    }
+                    // check @Id annotation usage on methods
+                    if (DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.ID)) {
+                        validateFieldOrPropertyType(method, type, diagnostics, context, Constants.ID);
                     }
 
                     // All Methods of this class should not be final
@@ -122,7 +126,6 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     }
 
                     validatePKDateTemporal(type, method, diagnostics, context);
-                    validateIdFieldOrPropertyType(method, unit, type, diagnostics, context);
 
                 }
 
@@ -132,7 +135,11 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     // check @version annotation usage on fields
                     if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.VERSION)) {
                         versionMembers.add(field);
-                        validateVersionFieldOrPropertyType(field, type, diagnostics, context);
+                        validateFieldOrPropertyType(field, type, diagnostics, context, Constants.VERSION);
+                    }
+                    // check @Id annotation usage on fields
+                    if (DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.ID)) {
+                        validateFieldOrPropertyType(field, type, diagnostics, context, Constants.ID);
                     }
 
                     // If a field is static, we do not care about it, we care about all other field
@@ -154,7 +161,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
                     }
 
                     validatePKDateTemporal(type, field, diagnostics, context);
-                    validateIdFieldOrPropertyType(field, unit, type, diagnostics, context);
+
                 }
 
                 // Check superclass hierarchy for primary key in @MappedSuperclass
@@ -487,8 +494,7 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
     }
 
     /**
-     * Validates that a field or method annotated with @Version has a supported type.
-     * Supported types are: int, Integer, short, Short, long, Long, java.sql.Timestamp
+     * Validates that a field or method annotated with @Id/@Version has a supported type.
      *
      * @param member the field or method to validate
      * @param type the containing type
@@ -496,75 +502,50 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
      * @param context the diagnostics context
      * @throws JavaModelException
      */
-    private void validateVersionFieldOrPropertyType(IMember member, IType type, List<Diagnostic> diagnostics,
-                                                    JavaDiagnosticsContext context) throws JavaModelException {
+    private void validateFieldOrPropertyType(IMember member, IType type, List<Diagnostic> diagnostics,
+                                             JavaDiagnosticsContext context, String candidate) throws JavaModelException {
         String typeFQ = null;
         Range range = null;
-
-        if (member instanceof IMethod) {
-            typeFQ = JDTTypeUtils.getResolvedResultTypeName((IMethod) member);
-            range = PositionUtils.toNameRange((IMethod) member, context.getUtils());
-        } else if (member instanceof IField) {
-            typeFQ = JDTTypeUtils.getResolvedTypeName((IField) member);
-            range = PositionUtils.toNameRange((IField) member, context.getUtils());
-        }
-
-        if (typeFQ != null && !Constants.VALID_VERSION_TYPES.contains(typeFQ)) {
-            diagnostics.add(context.createDiagnostic(context.getUri(),
-                                                     Messages.getMessage("InvalidVersionFieldOrPropertyType"),
-                                                     range, Constants.DIAGNOSTIC_SOURCE, null,
-                                                     ErrorCode.InvalidVersionFieldOrPropertyType, DiagnosticSeverity.Error));
-        }
-    }
-
-    /**
-     * Validates that a field or method annotated with @Id has a supported type.
-     * Supported types are: primitives, wrapper types, String, Date types, BigDecimal, BigInteger
-     *
-     * @param member the field or method to validate
-     * @param type the containing type
-     * @param diagnostics list to add diagnostics to
-     * @param context the diagnostics context
-     * @throws JavaModelException
-     */
-    private void validateIdFieldOrPropertyType(IMember member, ICompilationUnit unit, IType type, List<Diagnostic> diagnostics,
-                                               JavaDiagnosticsContext context) throws JavaModelException {
-        String typeFQ = null;
-        Range range = null;
-        boolean hasIdAnnotation = false, isArrayType = false;
+        boolean isArrayType = false;
 
         if (member instanceof IMethod) {
             IMethod method = (IMethod) member;
-            // Check if method has @Id annotation
-            if (!DiagnosticUtils.isMatchedAnnotation(unit, method.getAnnotations(), Constants.ID)) {
-                return;
-            }
-            hasIdAnnotation = true;
             typeFQ = JDTTypeUtils.getResolvedResultTypeName(method);
-            isArrayType = JDTTypeUtils.isArray(method.getReturnType());
             range = PositionUtils.toNameRange(method, context.getUtils());
+            if (candidate.equals(Constants.ID)) {
+                isArrayType = JDTTypeUtils.isArray(method.getReturnType());
+            }
         } else if (member instanceof IField) {
             IField field = (IField) member;
-            // Check if field has @Id annotation
-            if (!DiagnosticUtils.isMatchedAnnotation(unit, field.getAnnotations(), Constants.ID)) {
-                return;
-            }
-            hasIdAnnotation = true;
             typeFQ = JDTTypeUtils.getResolvedTypeName(field);
-            isArrayType = JDTTypeUtils.isArray(field.getTypeSignature());
             range = PositionUtils.toNameRange(field, context.getUtils());
-        }
-
-        if (!hasIdAnnotation) {
+            if (candidate.equals(Constants.ID)) {
+                isArrayType = JDTTypeUtils.isArray(field.getTypeSignature());
+            }
+        } else {
             return;
         }
 
-        if (typeFQ != null && (isArrayType || !Constants.VALID_ID_TYPES.contains(typeFQ))) {
-            diagnostics.add(context.createDiagnostic(context.getUri(),
-                                                     Messages.getMessage("InvalidIdType"),
-                                                     range, Constants.DIAGNOSTIC_SOURCE, null,
-                                                     ErrorCode.InvalidIdType, DiagnosticSeverity.Error));
+        if (typeFQ == null) {
+            return;
         }
+
+        if (candidate.equals(Constants.ID)) {
+            if (isArrayType || !Constants.VALID_ID_TYPES.contains(typeFQ)) {
+                diagnostics.add(context.createDiagnostic(context.getUri(),
+                                                         Messages.getMessage("InvalidIdType"),
+                                                         range, Constants.DIAGNOSTIC_SOURCE, null,
+                                                         ErrorCode.InvalidIdType, DiagnosticSeverity.Error));
+            }
+        } else if (candidate.equals(Constants.VERSION)) {
+            if (!Constants.VALID_VERSION_TYPES.contains(typeFQ)) {
+                diagnostics.add(context.createDiagnostic(context.getUri(),
+                                                         Messages.getMessage("InvalidVersionFieldOrPropertyType"),
+                                                         range, Constants.DIAGNOSTIC_SOURCE, null,
+                                                         ErrorCode.InvalidVersionFieldOrPropertyType, DiagnosticSeverity.Error));
+            }
+        }
+
     }
 
 }
