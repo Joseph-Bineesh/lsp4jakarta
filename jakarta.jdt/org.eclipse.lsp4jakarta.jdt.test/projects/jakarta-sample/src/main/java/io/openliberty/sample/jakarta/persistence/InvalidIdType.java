@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.util.UUID;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Test class with invalid @Id types that should trigger diagnostics
@@ -22,6 +24,12 @@ public class InvalidIdType {
     // Invalid: Collection type
     @Id
     private List<String> listId;
+    
+    @Id
+    private Set<String> setId;
+    
+    @Id
+    private Map<String, String> mapId;
 
     // Invalid: Object type
     @Id
