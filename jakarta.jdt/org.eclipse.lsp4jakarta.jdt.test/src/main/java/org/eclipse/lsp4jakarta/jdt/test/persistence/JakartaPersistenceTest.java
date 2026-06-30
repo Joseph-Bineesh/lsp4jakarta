@@ -631,7 +631,6 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
         assertJavaDiagnostics(diagnosticsParams, IJDT_UTILS);
     }
 
-
     @Test
     public void testInvalidIdType() throws Exception {
         IJavaProject javaProject = loadJavaProject("jakarta-sample", "");
@@ -697,5 +696,3 @@ public class JakartaPersistenceTest extends BaseJakartaTest {
     }
 
 }
-
-
