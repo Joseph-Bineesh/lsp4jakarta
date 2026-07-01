@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.eclipse.jdt.core.Signature;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -125,6 +127,7 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
         List<IAnnotation> mapKeyJoinCols = null;
         boolean hasMapKeyAnnotation = false;
         boolean hasMapKeyClassAnnotation = false, hasTypeDiagnostics = false;
+        boolean hasMapKeyEnumeratedAnnotation = false;
         IAnnotation[] allAnnotations = null;
 
         // Go through each method/field to ensure they do not have both MapKey and MapKeyColumn Annotations
@@ -132,6 +135,7 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
             mapKeyJoinCols = new ArrayList<IAnnotation>();
             hasMapKeyAnnotation = false;
             hasMapKeyClassAnnotation = false;
+            hasMapKeyEnumeratedAnnotation = false;
             allAnnotations = null;
 
             if (member instanceof IMethod) {
@@ -150,6 +154,8 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
                         hasMapKeyClassAnnotation = true;
                     else if (Constants.MAPKEYJOINCOLUMN.equals(matchedAnnotation)) {
                         mapKeyJoinCols.add(annotation);
+                    } else if (Constants.MAPKEYENUMERATED.equals(matchedAnnotation)) {
+                        hasMapKeyEnumeratedAnnotation = true;
                     }
                 }
             }
@@ -166,6 +172,10 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
 
             if (!hasTypeDiagnostics && (hasMapKeyAnnotation && hasMapKeyClassAnnotation)) {
                 collectMapKeyAnnotationsDiagnostics(member, context, diagnostics);
+            }
+
+            if (hasMapKeyEnumeratedAnnotation) {
+                collectMapKeyEnumeratedDiagnostics(member, type, context, diagnostics);
             }
 
             // If we have multiple MapKeyJoinColumn annotations on a single method/field
@@ -292,6 +302,100 @@ public class PersistenceMapKeyDiagnosticsParticipant implements IJavaDiagnostics
                 diagnostics.add(context.createDiagnostic(context.getUri(), Messages.getMessage(messageKey), range,
                                                          Constants.DIAGNOSTIC_SOURCE, null, errorCode, DiagnosticSeverity.Warning));
             }
+        }
+    }
+
+    /**
+     * Validates that {@code @MapKeyEnumerated} (Jakarta Persistence spec section
+     * 11.1.34) is used correctly:
+     *
+     * <ul>
+     * <li><b>Type check</b>: the field/property must be of type
+     * {@code java.util.Map} (or a sub-type). Applying it to a {@code List},
+     * {@code Set}, or any plain non-collection type is invalid because those
+     * types have no concept of a map key.</li>
+     * <li><b>Key-type check</b>: when the type is a {@code Map}, its first type
+     * argument (the key) must be an enum. A non-enum key type makes the
+     * annotation meaningless and violates the specification.</li>
+     * </ul>
+     *
+     * <p>Specification Reference (section 11.1.34):
+     * https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0#a15433
+     */
+    private void collectMapKeyEnumeratedDiagnostics(IMember member, IType declaringType,
+                                                    JavaDiagnosticsContext context,
+                                                    List<Diagnostic> diagnostics) throws CoreException {
+
+        IJavaProject javaProject = declaringType.getJavaProject();
+
+        // Step 1 — confirm field/method is typed as java.util.Map (or a sub-type).
+        // getResolvedTypeName / getResolvedResultTypeName return the FQ type name.
+        String fqName = null;
+        if (member instanceof IMethod) {
+            fqName = JDTTypeUtils.getResolvedResultTypeName((IMethod) member);
+        } else if (member instanceof IField) {
+            fqName = JDTTypeUtils.getResolvedTypeName((IField) member);
+        }
+
+        if (fqName == null) {
+            return;
+        }
+
+        boolean isMap = false;
+        if (MAP_INTERFACE_FQDN.equals(fqName)) {
+            isMap = true;
+        } else {
+            IType fieldType = javaProject.findType(fqName);
+            if (fieldType != null) {
+                ITypeHierarchy hierarchy = fieldType.newTypeHierarchy(null);
+                isMap = Arrays.stream(hierarchy.getAllSuperInterfaces(fieldType)).map(IType::getFullyQualifiedName).anyMatch(MAP_INTERFACE_FQDN::equals);
+            }
+        }
+
+        // Not a Map — @MapKeyEnumerated is invalid on List, Set, or plain fields.
+        if (!isMap) {
+            Range range = (member instanceof IMethod) ? PositionUtils.toNameRange((IMethod) member, context.getUtils()) : PositionUtils.toNameRange((IField) member,
+                                                                                                                                                    context.getUtils());
+            diagnostics.add(context.createDiagnostic(context.getUri(),
+                                                     Messages.getMessage("MapKeyEnumeratedNotOnMapType"),
+                                                     range, Constants.DIAGNOSTIC_SOURCE, null,
+                                                     ErrorCode.InvalidMapKeyEnumeratedNotOnMapType,
+                                                     DiagnosticSeverity.Error));
+            return;
+        }
+
+        // Step 2 — extract the Map key type argument from the raw JDT signature and
+        // check whether it resolves to an enum.
+        // IField.getTypeSignature() / IMethod.getReturnType() preserve generics,
+        // e.g. "QMap<QRoleType;QString;>;" for Map<RoleType, String>.
+        boolean mapKeyIsEnum = false;
+        try {
+            String rawSignature = (member instanceof IField) ? ((IField) member).getTypeSignature() : ((IMethod) member).getReturnType();
+
+            // Signature.getTypeArguments returns ["QRoleType;", "QString;"] for the above.
+            String[] typeArgs = Signature.getTypeArguments(rawSignature);
+            if (typeArgs != null && typeArgs.length >= 1) {
+                // JDTTypeUtils.getResolvedTypeName resolves a JDT signature against the
+                // declaring type's compilation unit, handling imports and inner types.
+                String keyTypeName = JDTTypeUtils.getResolvedTypeName(typeArgs[0], declaringType);
+                if (keyTypeName != null) {
+                    IType keyType = javaProject.findType(keyTypeName);
+                    mapKeyIsEnum = keyType != null && keyType.isEnum();
+                }
+            }
+        } catch (JavaModelException e) {
+            JakartaCorePlugin.logException("Error while checking map key type for @MapKeyEnumerated", e);
+            return;
+        }
+
+        if (!mapKeyIsEnum) {
+            Range range = (member instanceof IMethod) ? PositionUtils.toNameRange((IMethod) member, context.getUtils()) : PositionUtils.toNameRange((IField) member,
+                                                                                                                                                    context.getUtils());
+            diagnostics.add(context.createDiagnostic(context.getUri(),
+                                                     Messages.getMessage("MapKeyEnumeratedOnNonEnumKey"),
+                                                     range, Constants.DIAGNOSTIC_SOURCE, null,
+                                                     ErrorCode.InvalidMapKeyEnumeratedOnNonEnumKey,
+                                                     DiagnosticSeverity.Error));
         }
     }
 
