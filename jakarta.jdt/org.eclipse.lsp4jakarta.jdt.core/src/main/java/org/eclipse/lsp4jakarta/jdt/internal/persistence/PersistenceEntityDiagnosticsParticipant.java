@@ -54,6 +54,7 @@ import org.eclipse.lsp4jakarta.jdt.core.java.diagnostics.helpers.ConstructorInfo
 import org.eclipse.lsp4jakarta.jdt.core.utils.TypeHierarchyUtils;
 import org.eclipse.lsp4jakarta.jdt.internal.DiagnosticUtils;
 import org.eclipse.lsp4jakarta.jdt.internal.Messages;
+import org.eclipse.lsp4jakarta.jdt.internal.core.java.ManagedBean;
 import org.eclipse.lsp4jakarta.jdt.internal.core.ls.JDTUtilsLSImpl;
 
 import com.google.gson.JsonArray;
@@ -906,10 +907,8 @@ public class PersistenceEntityDiagnosticsParticipant implements IJavaDiagnostics
         }
 
         // The returned value can be a fully qualified name or a simple name (e.g., "OrderId")
-        String fqName = DiagnosticUtils.resolveFullyQualifiedName(type, keyClassName);
-
-        IJavaProject javaProject = type.getJavaProject();
-        IType keyType = javaProject.findType(fqName);
+        String fqName = ManagedBean.getFullyQualifiedClassName(type, keyClassName);
+        IType keyType = JDTTypeUtils.findType(type.getJavaProject(), fqName);
         if (keyType == null) {
             return;
         }
